@@ -39,7 +39,7 @@
             left: 0;
             width: 100%;
             height: 520px;
-            background-image: url('/sky/sky.png');
+            background-image: url('sky/sky.png');
             background-size: auto 100%;
             background-repeat: repeat-x;
             background-position: top left;
@@ -55,7 +55,7 @@
             left: 0;
             width: 100%;
             height: 240px;
-            background-image: url('/ground/ground-bg.png');
+            background-image: url('ground/ground-bg.png');
             background-size: auto 100%;
             background-repeat: repeat-x;
             background-position: top left;
@@ -70,7 +70,7 @@
             position: absolute;
             width: 20px;
             height: 20px;
-            background-image: url('/snow/snowflake.png');
+            background-image: url('snow/snowflake.png');
             background-size: contain;
             background-repeat: no-repeat;
             pointer-events: none;
@@ -461,7 +461,7 @@
             <button class="credits-btn" onclick="showCredits()">CREDITS</button>
             
             <div class="raiku-brand">
-                <img src="/avatars/raiku.png" alt="Raiku">
+                <img src="avatars/raiku.png" alt="Raiku">
                 <span class="brand-text">MADE FOR RAIKU PROJECT</span>
                 <div class="brand-links">
                     <a href="https://x.com/raikucom" target="_blank">TWITTER</a>
@@ -473,13 +473,13 @@
             <h1>Credits</h1>
             <div class="credits-container">
                 <div class="credit-card">
-                    <img src="/avatars/emeli.jpg" alt="Emeli_mag">
+                    <img src="avatars/emeli.jpg" alt="Emeli_mag">
                     <h3>EMELI_MAG</h3>
                     <p class="role">PIXEL ARTIST</p>
                     <a href="https://x.com/emeli_mag" target="_blank" class="twitter-link">@emeli_mag</a>
                 </div>
                 <div class="credit-card">
-                    <img src="/avatars/meg.jpg" alt="Meg">
+                    <img src="avatars/meg.jpg" alt="Meg">
                     <h3>MEG</h3>
                     <p class="role">DEVELOPER</p>
                     <a href="https://x.com/megymin_xz" target="_blank" class="twitter-link">@megymin_xz</a>
@@ -546,9 +546,9 @@
         
         // Шляхи до спрайтів
         const spritePaths = [
-            '/Dino/Sprite-0001.png',
-            '/Dino/Sprite-0002.png',
-            '/Dino/Sprite-0003.png'
+            'Dino/Sprite-0001.png',
+            'Dino/Sprite-0002.png',
+            'Dino/Sprite-0003.png'
         ];
         
         const spriteFrames = spritePaths.map(path => `url("${path}")`);
@@ -565,12 +565,12 @@
         let skyPosition = 0;
         // Obstacle sprites - додай свої файли сюди
         const obstacleSprites = {
-            ground: 'url("/lains/ground-obstacle.png")',  // На землі
-            air: 'url("/lains/air-obstacle.png")'         // У повітрі
+            ground: 'url("lains/ground-obstacle.png")',  // На землі
+            air: 'url("lains/air-obstacle.png")'         // У повітрі
         };
         
         // Cloud sprite - додай спрайт хмари сюди
-        const cloudSprite = 'url("/clouds/cloud.png")';  // Хмара
+        const cloudSprite = 'url("clouds/cloud.png")';  // Хмара
         
         // Snow sprite - спрайт сніжинки
         const snowSprite = 'url("/snow/snowflake.png")';  // Сніжинка
