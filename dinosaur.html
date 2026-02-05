@@ -44,9 +44,27 @@
             background-repeat: repeat-x;
             background-position: top left;
             z-index: 0;
-            will-change: background-position;
+            will-change: background-position, opacity;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .sky-background-autumn {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 520px;
+            background-image: url('sky/sky2.png');
+            background-size: auto 100%;
+            background-repeat: repeat-x;
+            background-position: top left;
+            z-index: 0;
+            will-change: background-position, opacity;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            transition: opacity 0.8s ease-in-out;
         }
 
         .bottom-background {
@@ -60,7 +78,54 @@
             background-repeat: repeat-x;
             background-position: top left;
             z-index: 1;
-            will-change: background-position;
+            will-change: background-position, opacity;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .bottom-background-desert {
+            position: absolute;
+            top: 500px;
+            left: 0;
+            width: 100%;
+            height: 260px;
+            background-image: url('ground/ground-bg2.png');
+            background-size: auto 100%;
+            background-repeat: repeat-x;
+            background-position: top left;
+            z-index: 0;
+            will-change: background-position, opacity;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .tree {
+            position: absolute;
+            bottom: 100px;
+            width: 150px;
+            height: 200px;
+            background-image: url('trees/trees.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            z-index: 5;
+            will-change: left, opacity;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            pointer-events: none;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 50;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
         }
@@ -88,6 +153,7 @@
             height: 200px;
             background-color: transparent;
             overflow: visible;
+            z-index: 2;
         }
 
         .dinosaur {
@@ -123,8 +189,12 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            will-change: transform, left;
+            will-change: transform, left, bottom;
             transform: translateZ(0);
+        }
+
+        .obstacle.ground-hidden {
+            bottom: -80px;
         }
 
         .obstacle.tall {
@@ -138,6 +208,10 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+        }
+
+        .obstacle.bird.air-hidden {
+            bottom: 200px;
         }
 
         .cloud {
@@ -441,7 +515,9 @@
 </head>
 <body>
     <div class="game-container" id="gameContainer">
+        <div class="sky-background-autumn" id="skyBackgroundAutumn"></div>
         <div class="sky-background" id="skyBackground"></div>
+        <div class="bottom-background-desert" id="bottomBackgroundDesert"></div>
         <div class="bottom-background" id="bottomBackground"></div>
         <div class="game-area">
             <div class="score" id="score">0</div>
@@ -456,6 +532,7 @@
         <div class="start-screen" id="startScreen">
             <h1>Raiku RUN</h1>
             <p>Press SPACE or tap to jump</p>
+            <p>Redesign NEW VERSIONS!!!</p>
             <p>Avoid obstacles!</p>
             <button onclick="startGame()">START GAME</button>
             <button class="credits-btn" onclick="showCredits()">CREDITS</button>
@@ -542,7 +619,23 @@
         const gameOverScreen = document.getElementById('gameOverScreen');
         const gameArea = document.querySelector('.game-area');
         const skyBackground = document.getElementById('skyBackground');
+        const skyBackgroundAutumn = document.getElementById('skyBackgroundAutumn');
         const bottomBackground = document.getElementById('bottomBackground');
+        const bottomBackgroundDesert = document.getElementById('bottomBackgroundDesert');
+        const gameContainer = document.getElementById('gameContainer');
+
+        // Режим гри: 'normal' (сніжинки) або 'autumn' (листочки)
+        let currentMode = 'autumn';
+
+        // Спрайти листочків
+        const leafSprites = [
+            'lista/1.png',
+            'lista/2.png',
+            'lista/3.png'
+        ];
+
+        // Максимальна кількість дерев на екрані
+        const MAX_TREES = 4;
         
         // Шляхи до спрайтів
         const spritePaths = [
@@ -665,14 +758,18 @@
 
             const obstacle = document.createElement('div');
             obstacle.classList.add('obstacle');
-            
+
             const randomType = Math.random();
-            if (randomType > 0.7) {
-                // Перешкода у повітрі
+            const isBird = randomType > 0.7;
+
+            if (isBird) {
+                // Перешкода у повітрі - починає зверху (прихована)
                 obstacle.classList.add('bird');
+                obstacle.classList.add('air-hidden');
                 obstacle.style.backgroundImage = obstacleSprites.air;
             } else {
-                // Перешкода на землі
+                // Перешкода на землі - починає знизу (прихована)
+                obstacle.classList.add('ground-hidden');
                 obstacle.style.backgroundImage = obstacleSprites.ground;
             }
 
@@ -680,17 +777,18 @@
             const gameAreaWidth = gameArea.offsetWidth;
             let obstacleLeft = gameAreaWidth + 100;
             obstacle.style.transform = `translateX(${obstacleLeft}px) translateZ(0)`;
-            
+
             // Якщо хітбокси увімкнені - показати на новій перешкоді
             if (game.showHitboxes) {
                 obstacle.style.outline = '2px solid blue';
                 obstacle.style.outlineOffset = '-15px';
             }
-            
+
             gameArea.appendChild(obstacle);
 
             let scored = false;
             let lastTime = performance.now();
+            let animationTriggered = false;
 
             function moveObstacle(currentTime) {
                 if (game.gameOver) {
@@ -704,11 +802,26 @@
                 obstacleLeft -= game.gameSpeed * deltaTime;
                 obstacle.style.transform = `translateX(${obstacleLeft}px) translateZ(0)`;
 
-                // Collision detection - тільки якщо перешкода видима
+                // Анімація появи - коли перешкода входить на екран
+                if (!animationTriggered && obstacleLeft < gameAreaWidth) {
+                    animationTriggered = true;
+                    // Через 0.3 секунди після появи на екрані - анімація
+                    setTimeout(() => {
+                        if (isBird) {
+                            obstacle.classList.remove('air-hidden');
+                        } else {
+                            obstacle.classList.remove('ground-hidden');
+                        }
+                    }, 300);
+                }
+
+                // Collision detection - тільки якщо перешкода видима і анімація завершена
                 if (obstacleLeft < gameAreaWidth && obstacleLeft > -64) {
-                    if (checkCollision(dinosaur, obstacle)) {
-                        endGame();
-                        return;
+                    if (!obstacle.classList.contains('ground-hidden') && !obstacle.classList.contains('air-hidden')) {
+                        if (checkCollision(dinosaur, obstacle)) {
+                            endGame();
+                            return;
+                        }
                     }
                 }
 
@@ -717,6 +830,7 @@
                     game.score += 10;
                     scoreDisplay.textContent = game.score;
                     updateGameSpeed();
+                    updateGroundBackground();
                     scored = true;
                 }
 
@@ -797,9 +911,14 @@
         }
 
         function updateGameSpeed() {
-            // Прискорення кожні 50 очок
-            if (game.score % 50 === 0 && game.score > 0) {
-                game.gameSpeed += 0.5;
+            // Прискорення кожні 30 очок (більш динамічно)
+            if (game.score % 30 === 0 && game.score > 0) {
+                game.gameSpeed += 0.8;
+
+                // Також зменшуємо інтервал спавну перешкод (мінімум 1000мс)
+                clearInterval(obstacleInterval);
+                const newInterval = Math.max(1000, 2000 - game.score * 2);
+                obstacleInterval = setInterval(createObstacle, newInterval);
             }
         }
 
@@ -843,61 +962,174 @@
         const savedHighScore = localStorage.getItem('dinoHighScore') || 0;
         document.getElementById('highScore').textContent = savedHighScore;
 
+        // Функція оновлення фону землі та неба (міняється кожні 150 очок)
+        function updateGroundBackground() {
+            const wasAutumn = currentMode === 'autumn';
+            // Визначаємо режим: кожні 150 очок міняється локація
+            // 0-149: autumn, 150-299: normal, 300-449: autumn, і т.д.
+            const locationIndex = Math.floor(game.score / 150);
+            const shouldBeAutumn = locationIndex % 2 === 0;
+
+            if (!shouldBeAutumn && currentMode !== 'normal') {
+                // Звичайний режим (сніжинки, звичайне небо)
+                bottomBackground.style.opacity = '1';
+                bottomBackgroundDesert.style.opacity = '0';
+                skyBackground.style.opacity = '1';
+                skyBackgroundAutumn.style.opacity = '0';
+                currentMode = 'normal';
+                // Плавно ховаємо дерева
+                document.querySelectorAll('.tree').forEach(tree => {
+                    tree.style.opacity = '0';
+                    setTimeout(() => tree.remove(), 800);
+                });
+                // Видаляємо листочки при зміні режиму
+                if (wasAutumn) {
+                    document.querySelectorAll('.leaf').forEach(leaf => leaf.remove());
+                }
+            } else if (shouldBeAutumn && currentMode !== 'autumn') {
+                // Осінній режим (листочки, дерева, осіннє небо)
+                bottomBackground.style.opacity = '0';
+                bottomBackgroundDesert.style.opacity = '1';
+                skyBackground.style.opacity = '0';
+                skyBackgroundAutumn.style.opacity = '1';
+                currentMode = 'autumn';
+                // Видаляємо сніжинки при зміні режиму
+                if (!wasAutumn) {
+                    document.querySelectorAll('.snowflake').forEach(snow => snow.remove());
+                }
+            }
+        }
+
+        // Встановлюємо початковий стан (осінній режим)
+        bottomBackground.style.opacity = '0';
+        bottomBackgroundDesert.style.opacity = '1';
+        skyBackground.style.opacity = '0';
+        skyBackgroundAutumn.style.opacity = '1';
+        currentMode = 'autumn';
+
         // Obstacle and cloud intervals
         let obstacleInterval;
         let cloudInterval;
-        let snowInterval;
+        let particleInterval;
+        let treeInterval;
 
-        // Функція створення сніжинки
-        function createSnowflake() {
-            const currentSnowflakes = document.querySelectorAll('.snowflake').length;
-            if (currentSnowflakes >= MAX_SNOWFLAKES) return;
+        // Функція створення частинок (сніжинки або листочки)
+        function createParticle() {
+            const currentParticles = document.querySelectorAll('.snowflake, .leaf').length;
+            if (currentParticles >= MAX_SNOWFLAKES) return;
 
-            const snowflake = document.createElement('div');
-            snowflake.classList.add('snowflake');
-            
+            const particle = document.createElement('div');
+
+            if (currentMode === 'autumn') {
+                // Листочок
+                particle.classList.add('leaf');
+                const randomLeaf = leafSprites[Math.floor(Math.random() * leafSprites.length)];
+                particle.style.backgroundImage = `url('${randomLeaf}')`;
+            } else {
+                // Сніжинка
+                particle.classList.add('snowflake');
+            }
+
             // Випадкова початкова позиція зверху
             const startX = Math.random() * window.innerWidth;
-            snowflake.style.left = startX + 'px';
-            snowflake.style.top = '-20px';
-            
-            // Випадковий розмір
-            const size = 10 + Math.random() * 20;
-            snowflake.style.width = size + 'px';
-            snowflake.style.height = size + 'px';
-            
-            // Випадкова прозорість
-            snowflake.style.opacity = 0.4 + Math.random() * 0.6;
-            
-            document.querySelector('.game-container').appendChild(snowflake);
+            particle.style.left = startX + 'px';
+            particle.style.top = '-30px';
 
-            let posY = -20;
+            // Випадковий розмір
+            const size = currentMode === 'autumn' ? (15 + Math.random() * 25) : (10 + Math.random() * 20);
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+
+            // Випадкова прозорість
+            particle.style.opacity = 0.6 + Math.random() * 0.4;
+
+            gameContainer.appendChild(particle);
+
+            let posY = -30;
             let posX = startX;
-            const speed = 1 + Math.random() * 2;
-            const drift = (Math.random() - 0.5) * 2;
-            
+            const speed = currentMode === 'autumn' ? (1.5 + Math.random() * 2.5) : (1 + Math.random() * 2);
+            const drift = (Math.random() - 0.5) * 3;
+            let rotation = Math.random() * 360;
+            const rotationSpeed = (Math.random() - 0.5) * 4;
+
             let lastTime = performance.now();
-            
-            function moveSnowflake(currentTime) {
+
+            function moveParticle(currentTime) {
                 const deltaTime = (currentTime - lastTime) / 16.67;
                 lastTime = currentTime;
-                
+
                 posY += speed * deltaTime;
                 posX += drift * deltaTime;
-                
-                snowflake.style.transform = `translate(${posX - startX}px, ${posY}px) translateZ(0)`;
-                
+                rotation += rotationSpeed * deltaTime;
+
+                particle.style.transform = `translate(${posX - startX}px, ${posY}px) rotate(${rotation}deg) translateZ(0)`;
+
                 if (posY > window.innerHeight) {
-                    snowflake.remove();
+                    particle.remove();
                     return;
                 }
-                requestAnimationFrame(moveSnowflake);
+                requestAnimationFrame(moveParticle);
             }
-            requestAnimationFrame(moveSnowflake);
+            requestAnimationFrame(moveParticle);
         }
 
-        // Запускаємо сніжинки одразу
-        snowInterval = setInterval(createSnowflake, 200);
+        // Функція створення дерева
+        function createTree() {
+            if (currentMode !== 'autumn') return;
+            if (!game.gameStarted || game.gameOver) return;
+
+            const currentTrees = document.querySelectorAll('.tree').length;
+            if (currentTrees >= MAX_TREES) return;
+
+            const tree = document.createElement('div');
+            tree.classList.add('tree');
+
+            // Рандомний розмір дерева (більший мінімум)
+            const scale = 1.0 + Math.random() * 0.5;
+            const width = 150 * scale;
+            const height = 200 * scale;
+            tree.style.width = width + 'px';
+            tree.style.height = height + 'px';
+
+            // Початкова позиція справа за екраном
+            let treeX = GAME_WIDTH + 50;
+            tree.style.left = treeX + 'px';
+
+            // Рандомна позиція - нижче щоб не перекривати дракона (передній план)
+            const bottomPos = 80 + Math.random() * 40;
+            tree.style.bottom = bottomPos + 'px';
+
+            // z-index = 5, дерева на передньому плані
+            tree.style.zIndex = '5';
+
+            gameContainer.appendChild(tree);
+
+            let lastTime = performance.now();
+
+            function moveTree(currentTime) {
+                if (game.gameOver || !game.gameStarted) return;
+
+                const deltaTime = (currentTime - lastTime) / 16.67;
+                lastTime = currentTime;
+
+                // Дерева рухаються синхронно з землею (1.0 швидкості)
+                treeX -= game.gameSpeed * deltaTime;
+                tree.style.left = treeX + 'px';
+
+                // Видаляємо коли вийшло за екран
+                if (treeX < -width) {
+                    tree.remove();
+                    return;
+                }
+
+                requestAnimationFrame(moveTree);
+            }
+            requestAnimationFrame(moveTree);
+        }
+
+        // Запускаємо частинки і дерева
+        particleInterval = setInterval(createParticle, 200);
+        treeInterval = setInterval(createTree, 3000);
 
         // Позиції для паралаксу
         let bottomBgPosition = 0;
@@ -909,14 +1141,16 @@
                 const deltaTime = currentTime - lastBgTime;
                 if (deltaTime > 0) {
                     const normalizedDelta = deltaTime / 16.67;
-                    
+
                     // Небо рухається найповільніше (0.3 від швидкості)
                     skyPosition -= game.gameSpeed * 0.3 * normalizedDelta;
                     skyBackground.style.backgroundPosition = `${skyPosition}px 0`;
-                    
+                    skyBackgroundAutumn.style.backgroundPosition = `${skyPosition}px 0`;
+
                     // Нижній фон рухається швидше (1.0 - як перешкоди)
                     bottomBgPosition -= game.gameSpeed * normalizedDelta;
                     bottomBackground.style.backgroundPosition = `${bottomBgPosition}px 0`;
+                    bottomBackgroundDesert.style.backgroundPosition = `${bottomBgPosition}px 0`;
                 }
             }
             lastBgTime = currentTime;
@@ -928,14 +1162,71 @@
         function startGame() {
             game.gameStarted = true;
             startScreen.classList.add('hidden');
-            
+
             dinosaur.classList.add('run');
             dinosaur.style.backgroundImage = spriteFrames[0];
-            
+
+            // Встановлюємо початковий фон землі (пустельний)
+            updateGroundBackground();
+
+            // Створюємо кілька початкових дерев на екрані
+            if (currentMode === 'autumn') {
+                for (let i = 0; i < 2; i++) {
+                    createInitialTree(200 + Math.random() * 800);
+                }
+            }
+
             obstacleInterval = setInterval(createObstacle, 2000);
             cloudInterval = setInterval(createCloud, 4000);
-            
+
             requestAnimationFrame(updateSprite);
+        }
+
+        // Функція для створення початкових дерев на екрані
+        function createInitialTree(startX) {
+            if (currentMode !== 'autumn') return;
+
+            const tree = document.createElement('div');
+            tree.classList.add('tree');
+
+            // Рандомний розмір дерева (більший мінімум)
+            const scale = 1.0 + Math.random() * 0.5;
+            const width = 150 * scale;
+            const height = 200 * scale;
+            tree.style.width = width + 'px';
+            tree.style.height = height + 'px';
+
+            let treeX = startX;
+            tree.style.left = treeX + 'px';
+
+            // Нижча позиція - передній план, не перекриває дракона
+            const bottomPos = 80 + Math.random() * 40;
+            tree.style.bottom = bottomPos + 'px';
+            // z-index = 5, дерева на передньому плані
+            tree.style.zIndex = '5';
+
+            gameContainer.appendChild(tree);
+
+            let lastTime = performance.now();
+
+            function moveTree(currentTime) {
+                if (game.gameOver) return;
+
+                const deltaTime = (currentTime - lastTime) / 16.67;
+                lastTime = currentTime;
+
+                // Синхронно з землею (1.0 швидкості)
+                treeX -= game.gameSpeed * deltaTime;
+                tree.style.left = treeX + 'px';
+
+                if (treeX < -width) {
+                    tree.remove();
+                    return;
+                }
+
+                requestAnimationFrame(moveTree);
+            }
+            requestAnimationFrame(moveTree);
         }
 
         // Sprite animation loop - works for both run and jump states
